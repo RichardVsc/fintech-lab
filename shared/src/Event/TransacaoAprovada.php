@@ -8,6 +8,9 @@ readonly class TransacaoAprovada
 {
     public function __construct(
         public string $transacaoId,
+        public string $cartaoMascarado,
+        public int $valor,
+        public string $comerciante,
         public int $saldoRestante,
         public string $timestamp,
     ) {}
@@ -16,6 +19,9 @@ readonly class TransacaoAprovada
     {
         return new self(
             transacaoId: $data['transacao_id'],
+            cartaoMascarado: $data['cartao_mascarado'],
+            valor: $data['valor'],
+            comerciante: $data['comerciante'],
             saldoRestante: $data['saldo_restante'],
             timestamp: $data['timestamp'],
         );
@@ -25,6 +31,9 @@ readonly class TransacaoAprovada
     {
         return [
             'transacao_id' => $this->transacaoId,
+            'cartao_mascarado' => $this->cartaoMascarado,
+            'valor' => $this->valor,
+            'comerciante' => $this->comerciante,
             'saldo_restante' => $this->saldoRestante,
             'timestamp' => $this->timestamp,
         ];

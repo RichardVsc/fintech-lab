@@ -52,6 +52,9 @@ final class AutorizadorService implements AutorizadorServiceInterface
 
         $aprovada = new TransacaoAprovada(
             transacaoId: $evento->transacaoId,
+            cartaoMascarado: $evento->cartaoMascarado,
+            valor: $evento->valor,
+            comerciante: $evento->comerciante,
             saldoRestante: $saldoRestante,
             timestamp: date('c'),
         );
