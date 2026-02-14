@@ -1,0 +1,14 @@
+{
+    "name": "fintech-lab/shared",
+    "description": "Shared DTOs and events for Fintech Lab microservices",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shared\\": "src/"
+        }
+    }
+}

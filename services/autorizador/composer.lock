@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "561536d433feaeb342fa44b9ed76c574",
+    "content-hash": "e81fda59d99b5f764c9f4f31caa92d0c",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -290,6 +290,31 @@
                 "source": "https://github.com/php-fig/http-message-util/tree/1.1.5"
             },
             "time": "2020-11-24T22:02:12+00:00"
+        },
+        {
+            "name": "fintech-lab/shared",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "/opt/shared",
+                "reference": "978cdc889a5bb9eb6655c0493e04ec3975ce2f1f"
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Shared\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Shared DTOs and events for Fintech Lab microservices",
+            "transport-options": {
+                "relative": false
+            }
         },
         {
             "name": "graham-campbell/result-type",

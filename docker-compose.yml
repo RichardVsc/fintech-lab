@@ -5,6 +5,7 @@ services:
       dockerfile: docker/Dockerfile
     volumes:
       - ./services/gateway:/opt/www
+      - ./shared:/opt/shared
     ports:
       - "9501:9501"
     depends_on:
@@ -33,6 +34,7 @@ services:
       dockerfile: docker/Dockerfile
     volumes:
       - ./services/autorizador:/opt/www
+      - ./shared:/opt/shared
     ports:
       - "9502:9501"
     depends_on:
@@ -61,6 +63,7 @@ services:
       dockerfile: docker/Dockerfile
     volumes:
       - ./services/ledger:/opt/www
+      - ./shared:/opt/shared
     ports:
       - "9503:9501"
     depends_on:
