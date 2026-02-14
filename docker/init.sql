@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS fintech_gateway;
+CREATE DATABASE IF NOT EXISTS fintech_autorizador;
+CREATE DATABASE IF NOT EXISTS fintech_ledger;

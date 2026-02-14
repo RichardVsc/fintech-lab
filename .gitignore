@@ -1,0 +1,4 @@
+services/*/vendor/
+services/*/runtime/
+services/*/.phpunit.result.cache
+mysql_data/

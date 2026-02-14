@@ -1,0 +1,133 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./services/gateway:/opt/www
+    ports:
+      - "9501:9501"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - APP_NAME=gateway
+      - APP_ENV=dev
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=fintech_gateway
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - REDIS_HOST=redis
+      - AMQP_HOST=rabbitmq
+      - AMQP_PORT=5672
+      - AMQP_USER=guest
+      - AMQP_PASSWORD=guest
+      - AMQP_VHOST=/
+    networks:
+      - fintech
+
+  autorizador:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./services/autorizador:/opt/www
+    ports:
+      - "9502:9501"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - APP_NAME=autorizador
+      - APP_ENV=dev
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=fintech_autorizador
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - REDIS_HOST=redis
+      - AMQP_HOST=rabbitmq
+      - AMQP_PORT=5672
+      - AMQP_USER=guest
+      - AMQP_PASSWORD=guest
+      - AMQP_VHOST=/
+    networks:
+      - fintech
+
+  ledger:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./services/ledger:/opt/www
+    ports:
+      - "9503:9501"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      - APP_NAME=ledger
+      - APP_ENV=dev
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=fintech_ledger
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - REDIS_HOST=redis
+      - AMQP_HOST=rabbitmq
+      - AMQP_PORT=5672
+      - AMQP_USER=guest
+      - AMQP_PASSWORD=guest
+      - AMQP_VHOST=/
+    networks:
+      - fintech
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fintech
+
+  mysql:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost -uroot -proot
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fintech
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - fintech
+
+networks:
+  fintech:
+    driver: bridge
+
+volumes:
+  mysql_data:
