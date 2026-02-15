@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace Gateway\Controller;
 
-use App\Amqp\Producer\TransacaoRecebidaProducer;
-use App\Validation\TransacaoValidatorInterface;
+use Gateway\Amqp\Producer\TransacaoRecebidaProducer;
+use Gateway\Validation\TransacaoValidatorInterface;
 use Hyperf\Amqp\Producer;
 use Ramsey\Uuid\Uuid;
 use Shared\Event\TransacaoRecebida;

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Ledger\Service;
 
-use App\Exception\ContaNaoEncontradaException;
-use App\Model\EventoContabil;
-use App\Model\SaldoAtual;
+use Ledger\Exception\ContaNaoEncontradaException;
+use Ledger\Model\EventoContabil;
+use Ledger\Model\SaldoAtual;
 
 final class ContaService implements ContaServiceInterface
 {

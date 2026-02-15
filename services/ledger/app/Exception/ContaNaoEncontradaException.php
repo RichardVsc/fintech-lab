@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Exception;
+namespace Ledger\Exception;
 
 use RuntimeException;
 

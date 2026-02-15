@@ -10,5 +10,5 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 return [
-    App\Validation\TransacaoValidatorInterface::class => App\Validation\TransacaoValidator::class,
+    Gateway\Validation\TransacaoValidatorInterface::class => Gateway\Validation\TransacaoValidator::class,
 ];

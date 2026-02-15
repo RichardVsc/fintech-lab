@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace Ledger\Command;
 
-use App\Model\EventoContabil;
-use App\Model\SaldoAtual;
+use Ledger\Model\EventoContabil;
+use Ledger\Model\SaldoAtual;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\DbConnection\Db;

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Autorizador\Service;
 
-use App\Amqp\Producer\TransacaoAprovadaProducer;
-use App\Amqp\Producer\TransacaoNegadaProducer;
-use App\Exception\ContaNaoEncontradaException;
-use App\Exception\FrequenciaExcessivaException;
-use App\Exception\SaldoInsuficienteException;
-use App\Exception\TransacaoDuplicadaException;
-use App\Exception\ValorExcessivoException;
+use Autorizador\Amqp\Producer\TransacaoAprovadaProducer;
+use Autorizador\Amqp\Producer\TransacaoNegadaProducer;
+use Autorizador\Exception\ContaNaoEncontradaException;
+use Autorizador\Exception\FrequenciaExcessivaException;
+use Autorizador\Exception\SaldoInsuficienteException;
+use Autorizador\Exception\TransacaoDuplicadaException;
+use Autorizador\Exception\ValorExcessivoException;
 use Hyperf\Amqp\Producer;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DbConnection\Db;

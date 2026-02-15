@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Validation\Exception;
+namespace Gateway\Validation\Exception;
 
 use Exception;
 

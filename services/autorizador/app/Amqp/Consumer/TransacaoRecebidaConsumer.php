@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Amqp\Consumer;
+namespace Autorizador\Amqp\Consumer;
 
-use App\Service\AutorizadorServiceInterface;
+use Autorizador\Service\AutorizadorServiceInterface;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Message\ConsumerMessage;
 use Hyperf\Amqp\Message\Type;

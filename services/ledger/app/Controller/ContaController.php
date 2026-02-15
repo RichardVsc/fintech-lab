@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace Ledger\Controller;
 
-use App\Service\ContaServiceInterface;
+use Ledger\Service\ContaServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class ContaController extends AbstractController

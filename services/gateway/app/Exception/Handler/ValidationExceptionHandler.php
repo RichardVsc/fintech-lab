@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Exception\Handler;
+namespace Gateway\Exception\Handler;
 
-use App\Validation\Exception\ValidationException;
+use Gateway\Validation\Exception\ValidationException;
 use Hyperf\ExceptionHandler\ExceptionHandler;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface;

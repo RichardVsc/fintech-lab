@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Autorizador\Service;
 
 use Shared\Event\TransacaoRecebida;
 

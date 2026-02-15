@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Validation;
+namespace Gateway\Validation;
 
-use App\Validation\Exception\ValidationException;
+use Gateway\Validation\Exception\ValidationException;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 
 final class TransacaoValidator implements TransacaoValidatorInterface

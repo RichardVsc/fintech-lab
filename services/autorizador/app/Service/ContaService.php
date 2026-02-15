@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Autorizador\Service;
 
-use App\Exception\ContaNaoEncontradaException;
-use App\Exception\SaldoInsuficienteException;
-use App\Model\Conta;
+use Autorizador\Exception\ContaNaoEncontradaException;
+use Autorizador\Exception\SaldoInsuficienteException;
+use Autorizador\Model\Conta;
 use Hyperf\DbConnection\Db;
 
 final class ContaService implements ContaServiceInterface

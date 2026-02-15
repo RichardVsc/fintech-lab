@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Amqp\Consumer;
+namespace Ledger\Amqp\Consumer;
 
-use App\Exception\EventoDuplicadoException;
-use App\Service\LedgerServiceInterface;
+use Ledger\Exception\EventoDuplicadoException;
+use Ledger\Service\LedgerServiceInterface;
 use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Message\ConsumerMessage;
 use Hyperf\Amqp\Message\Type;

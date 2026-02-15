@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Autorizador\Service;
 
-use App\Exception\FrequenciaExcessivaException;
-use App\Exception\ValorExcessivoException;
+use Autorizador\Exception\FrequenciaExcessivaException;
+use Autorizador\Exception\ValorExcessivoException;
 use Hyperf\Redis\Redis;
 
 final class AntiFraudeService implements AntiFraudeServiceInterface

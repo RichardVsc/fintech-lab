@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Ledger\Service;
 
-use App\Exception\ContaNaoEncontradaException;
-use App\Exception\EventoDuplicadoException;
-use App\Model\EventoContabil;
-use App\Model\SaldoAtual;
+use Ledger\Exception\ContaNaoEncontradaException;
+use Ledger\Exception\EventoDuplicadoException;
+use Ledger\Model\EventoContabil;
+use Ledger\Model\SaldoAtual;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DbConnection\Db;
 use Shared\Event\TransacaoAprovada;

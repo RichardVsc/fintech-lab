@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Ledger\Service;
 
 use Shared\Event\TransacaoAprovada;
 

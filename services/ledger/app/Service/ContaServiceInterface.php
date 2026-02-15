@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace Ledger\Service;
 
-use App\Model\SaldoAtual;
+use Ledger\Model\SaldoAtual;
 
 interface ContaServiceInterface
 {

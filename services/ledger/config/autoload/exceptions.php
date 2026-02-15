@@ -12,9 +12,9 @@ declare(strict_types=1);
 return [
     'handler' => [
         'http' => [
-            App\Exception\Handler\ContaNaoEncontradaExceptionHandler::class,
+            Ledger\Exception\Handler\ContaNaoEncontradaExceptionHandler::class,
             Hyperf\HttpServer\Exception\Handler\HttpExceptionHandler::class,
-            App\Exception\Handler\AppExceptionHandler::class,
+            Ledger\Exception\Handler\AppExceptionHandler::class,
         ],
     ],
 ];

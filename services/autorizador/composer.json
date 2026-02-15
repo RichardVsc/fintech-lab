@@ -53,7 +53,7 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "Autorizador\\": "app/"
         },
         "files": []
     },
