@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-config
+data:
+  APP_ENV: production
+  DB_DRIVER: mysql
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_USERNAME: root
+  DB_PASSWORD: root
+  DB_CHARSET: utf8mb4
+  DB_COLLATION: utf8mb4_unicode_ci
+  DB_PREFIX: ""
+  REDIS_HOST: redis
+  REDIS_AUTH: "(null)"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  AMQP_HOST: rabbitmq
+  AMQP_PORT: "5672"
+  AMQP_USER: guest
+  AMQP_PASSWORD: guest
+  AMQP_VHOST: /

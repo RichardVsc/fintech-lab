@@ -14,6 +14,10 @@ class TransacaoAprovadaProducer extends ProducerMessage
 {
     protected string|Type $type = Type::TOPIC;
 
+    protected string $exchange = 'transacoes';
+
+    protected array|string $routingKey = 'transacao.aprovada';
+
     public function __construct(TransacaoAprovada $evento)
     {
         $this->payload = $evento->toArray();

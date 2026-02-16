@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ledger
+  template:
+    metadata:
+      labels:
+        app: ledger
+    spec:
+      containers:
+        - name: ledger
+          image: fintech-lab/ledger:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 9501
+          envFrom:
+            - configMapRef:
+                name: shared-config
+          env:
+            - name: APP_NAME
+              value: ledger
+            - name: DB_DATABASE
+              value: fintech_ledger
+          readinessProbe:
+            tcpSocket:
+              port: 9501
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9501
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ledger
+spec:
+  selector:
+    app: ledger
+  ports:
+    - port: 9501
+      targetPort: 9501

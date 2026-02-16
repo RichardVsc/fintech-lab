@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autorizador
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autorizador
+  template:
+    metadata:
+      labels:
+        app: autorizador
+    spec:
+      containers:
+        - name: autorizador
+          image: fintech-lab/autorizador:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 9501
+          envFrom:
+            - configMapRef:
+                name: shared-config
+          env:
+            - name: APP_NAME
+              value: autorizador
+            - name: DB_DATABASE
+              value: fintech_autorizador
+          readinessProbe:
+            tcpSocket:
+              port: 9501
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9501
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autorizador
+spec:
+  selector:
+    app: autorizador
+  ports:
+    - port: 9501
+      targetPort: 9501

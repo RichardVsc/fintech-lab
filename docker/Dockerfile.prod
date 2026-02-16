@@ -1,0 +1,56 @@
+# ============================================
+# Stage 1: Install dependencies with Composer
+# ============================================
+FROM hyperf/hyperf:8.3-alpine-v3.19-swoole AS builder
+
+ARG SERVICE
+
+WORKDIR /build
+
+# Copy shared library first (it's a path repository dependency)
+COPY shared /opt/shared
+
+# Copy service composer files for dependency caching
+COPY services/${SERVICE}/composer.json services/${SERVICE}/composer.lock ./
+
+# Install production dependencies only
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+
+# Copy the rest of the service code
+COPY services/${SERVICE}/ ./
+
+# Rebuild autoloader with all classes
+RUN composer dump-autoload --optimize --no-dev
+
+# ============================================
+# Stage 2: Final production image
+# ============================================
+FROM hyperf/hyperf:8.3-alpine-v3.19-swoole
+
+ARG timezone=America/Sao_Paulo
+
+ENV TIMEZONE=${timezone} \
+    APP_ENV=production \
+    SCAN_CACHEABLE=(false)
+
+RUN set -ex \
+    && cd /etc/php* \
+    && { \
+        echo "upload_max_filesize=128M"; \
+        echo "post_max_size=128M"; \
+        echo "memory_limit=1G"; \
+        echo "date.timezone=${TIMEZONE}"; \
+    } | tee conf.d/99_overrides.ini \
+    && ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
+    && echo "${TIMEZONE}" > /etc/timezone \
+    && rm -rf /var/cache/apk/* /tmp/* /usr/share/man
+
+WORKDIR /opt/www
+
+# Copy built application from builder stage
+COPY --from=builder /build /opt/www
+COPY --from=builder /opt/shared /opt/shared
+
+EXPOSE 9501
+
+ENTRYPOINT ["php", "/opt/www/bin/hyperf.php", "start"]
