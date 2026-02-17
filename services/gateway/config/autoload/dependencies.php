@@ -11,4 +11,5 @@ declare(strict_types=1);
  */
 return [
     Gateway\Validation\TransacaoValidatorInterface::class => Gateway\Validation\TransacaoValidator::class,
+    Gateway\Validation\EstornoValidatorInterface::class => Gateway\Validation\EstornoValidator::class,
 ];
