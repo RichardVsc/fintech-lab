@@ -47,7 +47,13 @@ final class AutorizadorService implements AutorizadorServiceInterface
 
     private function aprovar(TransacaoRecebida $evento, int $saldoRestante): void
     {
-        $this->registrarProcessamento($evento->transacaoId, 'aprovada');
+        $this->registrarProcessamento(
+            $evento->transacaoId,
+            'aprovada',
+            $evento->valor,
+            $evento->cartaoMascarado,
+            $evento->comerciante,
+        );
         $this->antiFraudeService->registrar($evento->cartaoMascarado, $evento->transacaoId);
 
         $aprovada = new TransacaoAprovada(
@@ -98,11 +104,19 @@ final class AutorizadorService implements AutorizadorServiceInterface
         }
     }
 
-    private function registrarProcessamento(string $transacaoId, string $resultado): void
-    {
+    private function registrarProcessamento(
+        string $transacaoId,
+        string $resultado,
+        ?int $valor = null,
+        ?string $cartaoMascarado = null,
+        ?string $comerciante = null,
+    ): void {
         Db::table('transacoes_processadas')->insert([
             'transacao_id' => $transacaoId,
             'resultado' => $resultado,
+            'valor' => $valor,
+            'cartao_mascarado' => $cartaoMascarado,
+            'comerciante' => $comerciante,
         ]);
     }
 }

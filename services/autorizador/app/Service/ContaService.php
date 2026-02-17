@@ -34,4 +34,24 @@ final class ContaService implements ContaServiceInterface
             return $conta->saldo;
         });
     }
+
+    public function creditar(string $cartaoMascarado, int $valor): int
+    {
+        return Db::transaction(function () use ($cartaoMascarado, $valor) {
+            $conta = Conta::query()
+                ->where('cartao_mascarado', $cartaoMascarado)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($conta === null) {
+                throw new ContaNaoEncontradaException($cartaoMascarado);
+            }
+
+            $conta->saldo += $valor;
+            $conta->save();
+
+            return $conta->saldo;
+        });
+    }
 }
