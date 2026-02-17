@@ -478,3 +478,31 @@ kubectl delete -f k8s/
 | `ContaNaoEncontradaException` | Autorizador/Ledger | Cartao nao cadastrado |
 | `TransacaoDuplicadaException` | Autorizador | Mensagem duplicada (idempotencia) |
 | `EventoDuplicadoException` | Ledger | Evento duplicado (idempotencia) |
+
+---
+
+## Proximos Passos
+
+### Observabilidade (Prometheus + Grafana)
+Adicionar metricas aos servicos (requests/s, latencia, taxa de erros, uso de recursos) com dashboards visuais. Permitiria monitorar a saude do pipeline em tempo real e identificar gargalos.
+
+### CI/CD (GitHub Actions)
+Automatizar o pipeline de deploy: push no GitHub → roda testes → builda imagens → faz deploy no Kubernetes. Eliminaria passos manuais de build e apply.
+
+### Ingress Controller
+Substituir `kubectl port-forward` por um Ingress que expoe os servicos com URLs reais (ex: `gateway.fintech.local`). Mais proximo de como funciona em producao, com roteamento por path ou hostname.
+
+### Resource Limits e Autoscaling
+Definir `requests` e `limits` de CPU/memoria nos pods, e configurar Horizontal Pod Autoscaler (HPA) para escalar replicas automaticamente baseado em carga.
+
+### Secrets
+Migrar senhas do ConfigMap para Kubernetes Secrets, separando configuracao publica de dados sensiveis.
+
+### Testes de Integracao
+Teste end-to-end que publica uma mensagem no RabbitMQ e verifica que o evento chegou no Ledger. Validaria o pipeline completo (Gateway → Autorizador → Ledger) de forma automatizada.
+
+### Estorno / Chargeback
+Novo fluxo que reverte uma transacao aprovada sem deletar nada — registra um evento `estorno_realizado` no Ledger e recredita o saldo via projecao. Reforça o conceito de event sourcing (eventos sao imutaveis, correcoes sao novos eventos).
+
+### Health Check Endpoints
+Expor endpoints de health (`/health`) nos servicos Hyperf e configurar liveness/readiness probes nos manifests do Kubernetes apontando pra eles, em vez de TCP socket. Permite verificacoes mais inteligentes (ex: checar conexao com MySQL e RabbitMQ).
