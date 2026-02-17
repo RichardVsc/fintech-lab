@@ -13,23 +13,23 @@ Projeto de estudo que simula um pipeline simplificado de processamento de transa
 ## Arquitetura
 
 ```
-                         POST /transacao
-                              |
-                              v
-                        +-----------+
-                        |  Gateway  |  Valida input, publica evento
-                        +-----------+
-                              |
-                    transacao.recebida
-                              |
-                              v
+                         POST /transacao                POST /estorno
+                              |                              |
+                              v                              v
+                        +-----------+               +-----------+
+                        |  Gateway  |               |  Gateway  |
+                        +-----------+               +-----------+
+                              |                          |
+                    transacao.recebida          estorno.solicitado
+                              |                          |
+                              v                          v
                       +-------------+          +-------+
                       | Autorizador |--------->| Redis |  Anti-fraude (frequencia)
                       +-------------+          +-------+
-                        |         |
-              transacao.aprovada  transacao.negada
-                        |
-                        v
+                        |         |              |         |
+              transacao.aprovada  negada  estorno.aprovado  negado
+                        |                        |
+                        v                        v
                     +--------+
                     | Ledger |  Event sourcing + projecao de saldo
                     +--------+
@@ -42,9 +42,9 @@ Projeto de estudo que simula um pipeline simplificado de processamento de transa
 
 Tres microsservicos Hyperf comunicando-se exclusivamente via **RabbitMQ** (exchange `transacoes`, tipo topic):
 
-1. **Gateway** — Recebe requisicoes HTTP, valida dados do cartao e publica `TransacaoRecebida`
-2. **Autorizador** — Consome `TransacaoRecebida`, aplica regras anti-fraude, verifica saldo, debita conta e publica `TransacaoAprovada` ou `TransacaoNegada`
-3. **Ledger** — Consome `TransacaoAprovada`, registra evento contabil imutavel e atualiza projecao de saldo
+1. **Gateway** — Recebe requisicoes HTTP, valida dados do cartao e publica `TransacaoRecebida` ou `EstornoSolicitado`
+2. **Autorizador** — Consome `TransacaoRecebida` e `EstornoSolicitado`, aplica regras anti-fraude, verifica saldo, debita/credita conta e publica resultado
+3. **Ledger** — Consome `TransacaoAprovada` e `EstornoAprovado`, registra eventos contabeis imutaveis e atualiza projecao de saldo
 
 ### Conceitos-Chave
 
@@ -86,9 +86,9 @@ Duas regras implementadas com Redis:
 services/
   gateway/                # Microsservico de entrada
     app/
-      Controller/         # TransacaoController (POST /transacao)
+      Controller/         # TransacaoController, EstornoController
       Validation/         # Regras de validacao de input
-      Amqp/Producer/      # TransacaoRecebidaProducer
+      Amqp/Producer/      # TransacaoRecebidaProducer, EstornoSolicitadoProducer
       Exception/          # Exceptions de validacao
     config/
       routes.php          # Rotas HTTP
@@ -96,16 +96,16 @@ services/
 
   autorizador/            # Microsservico de autorizacao
     app/
-      Amqp/Consumer/      # TransacaoRecebidaConsumer
-      Amqp/Producer/      # TransacaoAprovadaProducer, TransacaoNegadaProducer
-      Service/            # AutorizadorService, ContaService, AntiFraudeService
-      Exception/          # SaldoInsuficiente, FrequenciaExcessiva, etc.
+      Amqp/Consumer/      # TransacaoRecebidaConsumer, EstornoSolicitadoConsumer
+      Amqp/Producer/      # TransacaoAprovada/Negada, EstornoAprovado/Negado
+      Service/            # AutorizadorService, EstornoService, ContaService, AntiFraudeService
+      Exception/          # SaldoInsuficiente, FrequenciaExcessiva, EstornoNaoPermitido, etc.
       Command/            # SeedContasCommand
     migrations/           # contas, transacoes_processadas
 
   ledger/                 # Microsservico de contabilidade
     app/
-      Amqp/Consumer/      # TransacaoAprovadaConsumer
+      Amqp/Consumer/      # TransacaoAprovadaConsumer, EstornoAprovadoConsumer
       Service/            # LedgerService (event sourcing)
       Model/              # EventoContabil, SaldoAtual
       Controller/         # ContaController (saldo, extrato)
@@ -158,6 +158,9 @@ docker-compose.yml        # Orquestracao local
 - **TransacaoRecebida**: `transacao_id`, `cartao_mascarado`, `valor`, `comerciante`, `timestamp`
 - **TransacaoAprovada**: mesmos campos + `saldo_restante`
 - **TransacaoNegada**: `transacao_id`, `motivo`, `timestamp`
+- **EstornoSolicitado**: `transacao_id`, `timestamp`
+- **EstornoAprovado**: `transacao_id`, `cartao_mascarado`, `valor`, `comerciante`, `saldo_restante`, `timestamp`
+- **EstornoNegado**: `transacao_id`, `motivo`, `timestamp`
 
 ### 5. Infraestrutura
 - **RabbitMQ**: Exchange `transacoes` (topic) com bindings para filas dos consumers
@@ -173,13 +176,13 @@ docker-compose.yml        # Orquestracao local
 | Tabela | Descricao |
 |--------|-----------|
 | `contas` | Cartao mascarado, saldo em centavos |
-| `transacoes_processadas` | Idempotencia — `transacao_id` + resultado (`aprovada`/`negada`) |
+| `transacoes_processadas` | Idempotencia — `transacao_id` + resultado (`aprovada`/`negada`/`estornada`) + detalhes (valor, cartao, comerciante) |
 
 ### Ledger (`fintech_ledger`)
 
 | Tabela | Descricao |
 |--------|-----------|
-| `eventos_contabeis` | Event store imutavel — tipo, valor, comerciante, transacao_id |
+| `eventos_contabeis` | Event store imutavel — tipo (`debito_realizado`/`estorno_realizado`), valor, comerciante, transacao_id |
 | `saldo_atual` | Projecao de saldo — uuid da conta, cartao mascarado, saldo |
 
 ---
@@ -259,6 +262,9 @@ CREATE TABLE IF NOT EXISTS contas (
 CREATE TABLE IF NOT EXISTS transacoes_processadas (
   transacao_id VARCHAR(36) PRIMARY KEY,
   resultado VARCHAR(10) NOT NULL,
+  valor BIGINT NULL,
+  cartao_mascarado VARCHAR(19) NULL,
+  comerciante VARCHAR(255) NULL,
   processada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );"
 
@@ -274,12 +280,13 @@ CREATE TABLE IF NOT EXISTS eventos_contabeis (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   conta_id BIGINT UNSIGNED NOT NULL,
   tipo VARCHAR(30) NOT NULL,
-  transacao_id VARCHAR(36) NOT NULL UNIQUE,
+  transacao_id VARCHAR(36) NOT NULL,
   valor BIGINT NOT NULL,
   comerciante VARCHAR(255) NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (conta_id) REFERENCES saldo_atual(id),
-  INDEX idx_conta_id (conta_id)
+  INDEX idx_conta_id (conta_id),
+  UNIQUE INDEX eventos_contabeis_transacao_id_tipo_unique (transacao_id, tipo)
 );"
 ```
 
@@ -317,6 +324,7 @@ kubectl exec deploy/gateway -- curl -s -X POST http://localhost:9501/transacao \
 | Metodo | Servico | Endpoint | Descricao |
 |--------|---------|----------|-----------|
 | POST | Gateway | `/transacao` | Envia uma transacao para processamento |
+| POST | Gateway | `/estorno` | Solicita estorno de uma transacao aprovada |
 | GET | Ledger | `/conta/{uuid}/saldo` | Consulta saldo de uma conta |
 | GET | Ledger | `/conta/{uuid}/extrato` | Consulta extrato (historico de eventos) |
 
@@ -418,6 +426,25 @@ Resposta (`422`):
 }
 ```
 
+### Solicitar estorno
+```bash
+# Use o transacao_id retornado pelo POST /transacao
+curl -X POST http://localhost:9501/estorno \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transacao_id": "uuid-da-transacao"
+  }'
+```
+
+Resposta esperada (`202 Accepted`):
+```json
+{
+  "transacao_id": "uuid-da-transacao",
+  "status": "estorno_solicitado"
+}
+```
+O Autorizador verifica se a transacao existe e foi aprovada. Se sim, credita o saldo e publica `EstornoAprovado`. Tentar estornar novamente retorna estorno negado (ja estornada).
+
 ### Consultar saldo (Ledger)
 ```bash
 # Substitua {uuid} pelo UUID da conta no Ledger
@@ -477,6 +504,7 @@ kubectl delete -f k8s/
 | `ValorExcessivoException` | Autorizador | Valor acima de R$ 10.000 |
 | `ContaNaoEncontradaException` | Autorizador/Ledger | Cartao nao cadastrado |
 | `TransacaoDuplicadaException` | Autorizador | Mensagem duplicada (idempotencia) |
+| `EstornoNaoPermitidoException` | Autorizador | Transacao nao encontrada, negada ou ja estornada |
 | `EventoDuplicadoException` | Ledger | Evento duplicado (idempotencia) |
 
 ---
@@ -500,9 +528,6 @@ Migrar senhas do ConfigMap para Kubernetes Secrets, separando configuracao publi
 
 ### Testes de Integracao
 Teste end-to-end que publica uma mensagem no RabbitMQ e verifica que o evento chegou no Ledger. Validaria o pipeline completo (Gateway → Autorizador → Ledger) de forma automatizada.
-
-### Estorno / Chargeback
-Novo fluxo que reverte uma transacao aprovada sem deletar nada — registra um evento `estorno_realizado` no Ledger e recredita o saldo via projecao. Reforça o conceito de event sourcing (eventos sao imutaveis, correcoes sao novos eventos).
 
 ### Health Check Endpoints
 Expor endpoints de health (`/health`) nos servicos Hyperf e configurar liveness/readiness probes nos manifests do Kubernetes apontando pra eles, em vez de TCP socket. Permite verificacoes mais inteligentes (ex: checar conexao com MySQL e RabbitMQ).
